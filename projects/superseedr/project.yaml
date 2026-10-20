@@ -1,0 +1,8 @@
+homepage: "https://github.com/Jagalite/superseedr"
+main_repo: "https://github.com/Jagalite/superseedr"
+language: rust
+primary_contact: "jagatranvo@gmail.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
