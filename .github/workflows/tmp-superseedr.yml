@@ -1,0 +1,32 @@
+name: "TEMP: superseedr build check"
+on:
+  push:
+    branches: [tmp-ci-superseedr]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: python3 infra/helper.py build_image --pull superseedr
+      - name: Build fuzzers (address)
+        run: python3 infra/helper.py build_fuzzers --sanitizer address superseedr
+      - name: Check build (address)
+        run: python3 infra/helper.py check_build --sanitizer address superseedr
+      - name: List outputs
+        run: ls -la build/out/superseedr/
+      - name: Run each fuzzer for 60 seconds
+        run: |
+          for f in build/out/superseedr/*_seed_corpus.zip; do
+            t=$(basename "$f" _seed_corpus.zip)
+            echo "::group::$t"
+            python3 infra/helper.py run_fuzzer superseedr "$t" -- -max_total_time=60 2>&1 | tail -5
+            echo "::endgroup::"
+          done
+      - name: Build fuzzers (coverage)
+        run: python3 infra/helper.py build_fuzzers --sanitizer coverage superseedr
+      - name: Check build (coverage)
+        run: python3 infra/helper.py check_build --sanitizer coverage superseedr
